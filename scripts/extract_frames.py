@@ -14,7 +14,6 @@ import json
 import cv2
 import numpy as np
 from pathlib import Path
-from collections import defaultdict
 
 # ---------------- CONFIG ----------------
 VIDEOS_ROOT = Path("data/videos")

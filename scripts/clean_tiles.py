@@ -8,7 +8,6 @@ Flow alignment (videos -> frames -> tiles_pool -> tiles_man -> rounds):
 - writes images to tiles_man/images and metadata to tiles_man/metadata_man.json (JSON only)
 """
 
-import os
 import random
 import json
 import cv2
