@@ -62,3 +62,34 @@
 *.TS
 *.M2TS
 *.F4V
+
+# IDE settings and metadata
+
+# VS Code
+.vscode/
+.vscode-test/
+
+# JetBrains IDEs (IntelliJ, PyCharm, WebStorm, etc.)
+.idea/
+*.iml
+out/
+
+# Eclipse / Spring Tool Suite
+.project
+.classpath
+.settings/
+.metadata/
+
+# Visual Studio / Rider
+.vs/
+*.user
+*.suo
+*.userprefs
+
+# General IDE/Editor artifacts
+*.swp
+*.swo
+*.orig
+*~
+.DS_Store
+Thumbs.db

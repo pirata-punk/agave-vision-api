@@ -1,309 +1,156 @@
-📘 AGAVE VISION — LABELING MANUAL
+# AGAVE VISION — Manual de Etiquetado
 
-For Label Studio + YOLOv8
+## 0) Pre‑work obligatorio (archivos locales + Label Studio)
 
-Applies to all rounds (tiles_round1, tiles_round2, tiles_round3, tiles_round4)
+Label Studio bloquea el servicio de archivos locales si no se habilita. Completa cada paso antes empezar a etiquetar.
 
-⸻
+### 0.1 Instalar Python y Label Studio (una sola vez)
 
-0. ⚙️ MANDATORY PRE-WORK — Label Studio Setup (Local Files)
+- Verifica Python: `python3 --version` (≥ 3.10; 3.11 recomendado).
+- Si falta o está desactualizado:
 
-Label Studio does NOT allow local file serving unless you explicitly enable it.
-Every annotator must follow these steps before starting a project.
+  - macOS: `brew install python` o https://www.python.org/downloads/macos/
+  - Windows: https://www.python.org/downloads/windows/ <br> _(marca “Add Python to PATH”)._
 
-⸻
+- Instala Label Studio:
+  ```bash
+  pip install --upgrade pip
+  pip install label-studio
+  ```
 
-0.1. Verify dataset folders
+### 0.2 Verificar carpetas del dataset
 
-All datasets follow the naming convention:
+- Patrón: `agave-vision-api/data/tiles_round<round_number>/images/`
+- Ejemplos: `.../tiles_round1/images/`, `.../tiles_round2/images/`, `.../tiles_round3/images/`, `.../tiles_round4/images/`
+- Cada ronda usa su propio proyecto en Label Studio.
 
-agave-vision-api/data/tiles_round<round_number>/images/
+### 0.3 Establecer variables de entorno requeridas
 
-Examples:
+La raíz debe ser `tiles_roundN` (NO la carpeta `images`). Ejemplo para ronda 1:
 
-.../data/tiles_round1/images/
-.../data/tiles_round2/images/
-.../data/tiles_round3/images/
-.../data/tiles_round4/images/
+```bash
+export LOCAL_FILES_SERVING_ENABLED=true
+export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
 
-Each round is independent and requires a separate LS project.
+export LOCAL_FILES_DOCUMENT_ROOT="/Users/<tu-usuario>/path/agave-vision-api/data/tiles_round1"
+export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="/Users/<tu-usuario>/path/agave-vision-api/data/tiles_round1"
+```
 
-⸻
+Reemplaza `<tu-usuario>` y la ruta completa según corresponda.
 
-0.2. Kill any previous Label Studio process (IMPORTANT)
+### 0.7 Iniciar Label Studio
 
-Label Studio sometimes runs as:
-• label-studio
-• label_studio
-• label studio ← this one caused your issue
+```bash
+label-studio start
+```
 
-Run all:
+### 0.8 Conectar archivos locales en la UI
 
+- Tipo de almacenamiento: Local Files.
+- Ruta absoluta: `/Users/<tu-usuario>/path/agave-vision-api/data/tiles_round1/images`
+- Debe estar **dentro** de la raíz configurada en las variables.
+- Si root = `tiles_round1`, entonces:
+  - `tiles_round1/images` ✅
+  - `tiles_round1` (no es carpeta de imágenes)
+
+---
+
+### Troubleshooting:
+
+### A) Terminar procesos previos de Label Studio
+
+Ejecuta todo; ignora mensajes de “no se encontró proceso”:
+
+```bash
 pkill -f label-studio
 pkill -f label_studio
 pkill -f "label studio"
+```
 
-If nothing is killed, ignore the message.
+### B) Limpiar variables de entorno en conflicto
 
-⸻
-
-0.3. Activate your Python environment
-
-cd /path/to/agave-vision-api
-source .agave-vision-venv/bin/activate
-
-⸻
-
-0.4. Clear any conflicting environment variables
-
+```bash
 unset LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED
 unset LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT
 unset LOCAL_FILES_SERVING_ENABLED
 unset LOCAL_FILES_DOCUMENT_ROOT
+```
 
-⸻
+## 1) Nombres de proyecto (obligatorio)
 
-0.5. Set ALL required environment variables
+- Formato: `agave-vision-tiles-round-<round_number>`
+- Ejemplos: `agave-vision-tiles-round-1`, `agave-vision-tiles-round-2`, `agave-vision-tiles-round-3`, `agave-vision-tiles-round-4`
 
-For round N, the root must be the tiles_roundN directory, NOT the images folder.
+## 2) Nombres de dataset (almacenamiento Local Files)
 
-Example for Round 1:
+- Formato: `tiles-round-<round_number>` (ej.: `tiles-round-1`, `tiles-round-2`, `tiles-round-3`, `tiles-round-4`)
 
-export LOCAL_FILES_SERVING_ENABLED=true
-export LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true
+## 3) Interfaz de etiquetado requerida (XML)
 
-export LOCAL_FILES_DOCUMENT_ROOT="/Users/<your-username>/path/agave-vision-api/data/tiles_round1"
-export LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="/Users/<your-username>/path/agave-vision-api/data/tiles_round1"
+Usa exactamente esto:
 
-Replace <your-username> and full path accordingly.
-
-⸻
-
-0.6. Start Label Studio
-
-label-studio start
-
-⸻
-
-0.7. In the UI → Connect Local Files
-
-When creating a new dataset connection:
-• Absolute File Path must be:
-
-/Users/<your-username>/path/agave-vision-api/data/tiles_round1/images
-
-    •	It MUST be inside the root set in the environment variable.
-
-If root = tiles_round1, then:
-• UI path = tiles_round1/images ✓
-• UI path = tiles_round1 ✗ (not a directory of images)
-
-⸻
-
-1. 📂 PROJECT NAMING CONVENTION (MANDATORY)
-
-Each Label Studio project name must follow:
-
-agave-vision-tiles-round-<round_number>
-
-Examples:
-
-agave-vision-tiles-round-1
-agave-vision-tiles-round-2
-agave-vision-tiles-round-3
-agave-vision-tiles-round-4
-
-Use exactly this format for team consistency.
-
-⸻
-
-2. 📦 DATASET NAMING CONVENTION
-
-Inside Label Studio → Cloud Storage → Local Files:
-
-Use storage titles of the form:
-
-tiles-round-<round_number>
-
-Examples:
-
-tiles-round-1
-tiles-round-2
-tiles-round-3
-tiles-round-4
-
-Again: same format for all annotators.
-
-⸻
-
-3. 🖼️ REQUIRED LABELING INTERFACE (XML)
-
-Every project MUST use this annotation interface exactly as written:
-
+```xml
 <View>
   <Image name="image" value="$image"/>
-
   <RectangleLabels name="label" toName="image">
     <Label value="pina" background="green"/>
     <Label value="worker" background="yellow"/>
     <Label value="object" background="red"/>
   </RectangleLabels>
 </View>
+```
 
-Notes:
-• Label names must match model training target classes exactly:
-• pina
-• worker
-• object
-• Background colors are important for annotation clarity.
+Notas: los nombres de clase deben coincidir (`pina`, `worker`, `object`); conserva los colores.
 
-⸻
+## 4) Objetivo de anotación
 
-4. 🎯 ANNOTATION OBJECTIVE
+- Entrenar YOLOv8 para detectar: `pina`, `worker`, `object`.
+- Exportar bounding boxes y tiles vacíos. Los tiles vacíos deben quedar sin etiqueta.
 
-We are training a YOLOv8 model to detect:
-• pina
-• worker
-• object
+## 5) Definiciones de clase
 
-We also need LS to export both:
-• bounding boxes
-• no-label “empty” tiles
+- **pina**: Piña de agave reconocible (completa o parcial, cercana o lejana).
+- **worker**: Persona con PPE (casco, chaleco, botas, postura de trabajador).
+- **object**: Elementos removibles y no estructurales (conos, herramientas, cascos sueltos, mangueras/cables en el piso, llantas no fijadas, tablas, cajas, rocas, escombros grandes).
 
-Empty tiles must remain empty (no boxes).
+## 6) Nunca etiquetar
 
-⸻
+- Paredes de difusor/hopper; rejillas de piso; paredes de concreto; barandales/estructuras metálicas.
+- Carrocería del camión o llantas fijas; cables permanentes.
+- Sombras; reflejos; manchas de agua; escombros muy pequeños; formas ambiguas.
 
-5. 🏷️ CLASSES (DEFINITIONS)
+## 7) Reglas de etiquetado
 
-pina
+- **worker — etiqueta si:** PPE identificable; parte superior visible; piernas + chaleco visibles; agachado; parcialmente recortado pero identificable.  
+  **No etiquetes:** extremidades no identificables; sombras; reflejos; fragmentos diminutos.
+- **pina — etiqueta si:** piñas completas; piñas parciales; piñas lejanas si la forma es clara; piñas superpuestas (una por piña visible).  
+  **No etiquetes:** chips; montones indistinguibles; trozos de madera similares.
+- **object — etiqueta si:** casco en el piso; conos; herramientas; cables en el piso; llantas sueltas; cajas/tablas/cubetas; escombros grandes.  
+  **No etiquetes:** componentes fijos del camión; tuberías estructurales; cables permanentes; polvo/residuos pequeños.
 
-Recognizable agave piña (whole or partial, close or far).
+## 8) Manejo de tiles vacíos
 
-worker
+Si el tile no tiene `pina`, `worker` ni `object`, déjalo vacío. Los tiles vacíos son negativos obligatorios para entrenamiento.
 
-Person wearing PPE (helmet, vest, boots, worker posture).
+## 9) Lógica de decisión (flujo)
 
-object
+- ¿Es un trabajador? → `worker`
+- Si no: ¿es una piña? → `pina`
+- Si no: ¿es un objeto removible? → `object`
+- Si no: dejar vacío
 
-Any foreign, removable non-structural item:
-• Cones
-• Tools
-• Loose hardhats
-• Hoses/cables on ground
-• Tires not attached to truck
-• Boards, crates, rocks
-• Debris chunks
+## 10) Ejemplos rápidos
 
-⸻
-
-6. 🛑 NEVER LABEL THESE
-   • Hopper/diffuser walls
-   • Floor mesh patterns
-   • Concrete walls
-   • Railings / metal frames
-   • Truck body or fixed tires
-   • Permanent cables
-   • Shadows
-   • Reflections
-   • Water stains
-   • Tiny debris
-   • Ambiguous shapes
-
-⸻
-
-7. ✔️ LABELING RULES
-
-worker
-
-Label if:
-• Worker identifiable by PPE
-• Upper body visible
-• Legs + vest visible
-• Worker bending over
-• Partially cropped but identifiable
-
-Do NOT label:
-• Unidentifiable limbs
-• Shadows
-• Reflections
-• Tiny fragments
-
-⸻
-
-pina
-
-Label:
-• Full piñas
-• Partial piñas
-• Far-away piñas if shape is clear
-• Overlapping piñas (each visible one)
-
-Do NOT label:
-• Chips
-• Indistinguishable mass piles
-• Wood chunks that look similar
-
-⸻
-
-object
-
-Label:
-• Hardhat on ground
-• Cones
-• Tools
-• Cables lying across floor
-• Loose tires
-• Crates, boards, buckets
-• Large debris
-
-Do NOT label:
-• Attached truck components
-• Structural pipes
-• Permanent cables
-• Dirt/small debris
-
-⸻
-
-8. 🔳 EMPTY TILE HANDLING
-
-If tile has none of:
-• pina
-• worker
-• object
-
-→ leave annotation list empty.
-
-Empty tiles are essential for training.
-
-⸻
-
-9. 🧩 DECISION LOGIC
-
-Is it a worker?
-→ Yes → worker
-→ No →
-Is it a pina?
-→ Yes → pina
-→ No →
-Is it a removable object?
-→ Yes → object
-→ No →
-Leave empty
-
-⸻
-
-10. ✔️ Quick Example Mapping
-
-Scenario Result Class
-Worker seated, helmet visible label worker
-Worker leg + vest label worker
-Piñas clear view label pina
-Piñas far away but identifiable label pina
-Hardhat on ground label object
-Cone on walkway label object
-Cable across floor label object
-Truck bed, no objects empty —
-Black pit empty —
-Metal plate empty —
-Shadows or glare ignore —
+| Escenario                         | Clase  |
+| --------------------------------- | ------ |
+| Trabajador sentado, casco visible | worker |
+| Pierna + chaleco visibles         | worker |
+| Piñas vista clara                 | pina   |
+| Piñas lejanas identificables      | pina   |
+| Casco en el piso                  | object |
+| Cono en pasillo                   | object |
+| Cable sobre el piso               | object |
+| Caja de camión, sin objetos       | empty  |
+| Fosa negra                        | empty  |
+| Placa metálica                    | empty  |
+| Sombras o reflejos                | ignore |
