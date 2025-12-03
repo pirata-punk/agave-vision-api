@@ -1,3 +1,13 @@
+"""
+Filter tiles_pool into a balanced manual-label set (tiles_man) using edge content.
+
+Flow alignment (videos -> frames -> tiles_pool -> tiles_man -> rounds):
+- consumes tiles_pool/metadata.json
+- drops low-information tiles via edge threshold
+- applies per-folder quotas and global cap
+- writes images to tiles_man/images and metadata to tiles_man/metadata_man.json (JSON only)
+"""
+
 import os
 import random
 import json
@@ -10,11 +20,13 @@ import shutil
 # ------------------------------------------------------
 # CONFIG
 # ------------------------------------------------------
-TILES_DIR = Path("tiles/images")
-META_JSON = Path("tiles/metadata.json")
+# Input: tiles pool
+TILES_DIR = Path("tiles_pool/images")
+META_JSON = Path("tiles_pool/metadata.json")
 
-OUT_DIR = Path("tiles_clean/images")
-OUT_META_JSON = Path("tiles_clean/metadata_clean.json")
+# Output: manually labeled candidate set (do not overwrite existing labeled data)
+OUT_DIR = Path("tiles_man/images")
+OUT_META_JSON = Path("tiles_man/metadata_man.json")
 
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 

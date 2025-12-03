@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Split tiles_clean into 4 balanced, non-overlapping rounds using JSON metadata.
+Split tiles_man into 4 balanced, non-overlapping rounds using JSON metadata.
 
 Inputs:
-  - tiles_clean/images/*.jpg
-  - tiles_clean/metadata_clean.json
+  - tiles_man/images/*.jpg
+  - tiles_man/metadata_man.json
 
 Outputs:
   - tiles_round1/images/*.jpg
@@ -25,8 +25,8 @@ from pathlib import Path
 from typing import Dict, List
 
 # ---------------- CONFIG ----------------
-CLEAN_IMAGES_DIR = Path("tiles_clean/images")
-CLEAN_META_JSON = Path("tiles_clean/metadata_clean.json")
+MAN_IMAGES_DIR = Path("tiles_man/images")
+MAN_META_JSON = Path("tiles_man/metadata_man.json")
 
 ROUNDS = [
     {
@@ -56,12 +56,12 @@ RANDOM_SEED = 42  # deterministic splitting
 
 
 def load_rows() -> List[Dict]:
-    if not CLEAN_META_JSON.exists():
-        raise FileNotFoundError(f"Metadata JSON not found: {CLEAN_META_JSON}")
-    if not CLEAN_IMAGES_DIR.exists():
-        raise FileNotFoundError(f"Images directory not found: {CLEAN_IMAGES_DIR}")
+    if not MAN_META_JSON.exists():
+        raise FileNotFoundError(f"Metadata JSON not found: {MAN_META_JSON}")
+    if not MAN_IMAGES_DIR.exists():
+        raise FileNotFoundError(f"Images directory not found: {MAN_IMAGES_DIR}")
 
-    with CLEAN_META_JSON.open("r", encoding="utf-8") as f:
+    with MAN_META_JSON.open("r", encoding="utf-8") as f:
         meta = json.load(f)
 
     rows = meta.get("files", [])
@@ -130,7 +130,7 @@ def write_round_metadata(meta_path: Path, images_dir: Path, rows: List[Dict]):
 def main():
     rows = load_rows()
     total_tiles = len(rows)
-    print(f"Total tiles in tiles_clean: {total_tiles}")
+    print(f"Total tiles in tiles_man: {total_tiles}")
 
     # Group rows by folder
     by_folder: Dict[str, List[Dict]] = defaultdict(list)
@@ -183,7 +183,7 @@ def main():
         # Copy images
         for row in rows_list:
             tile_filename = row["tile_filename"]
-            src = CLEAN_IMAGES_DIR / tile_filename
+            src = MAN_IMAGES_DIR / tile_filename
             if not src.exists():
                 continue
             dst = images_dir / tile_filename

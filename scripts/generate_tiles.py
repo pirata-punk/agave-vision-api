@@ -1,10 +1,10 @@
 """
 Generate 640x640 tiles with 20% overlap from the curated frame subset.
 
-The logic follows docs/smart_tile_selection.md:
-- balances frame contribution per camera folder
-- walks data/frames recursively (optionally using selected_frames.json order)
-- writes tiles to tiles/images and metadata to tiles/metadata.json
+Flow alignment (videos -> frames -> tiles_pool -> tiles_man -> rounds):
+- This script consumes deduped frames under data/frames (plus selected_frames.json order if present)
+- Balances frame contribution per camera folder
+- Writes tiles into tiles_pool/images and metadata to tiles_pool/metadata.json (JSON only)
 """
 
 from __future__ import annotations
@@ -20,8 +20,9 @@ import cv2
 FRAMES_ROOT = Path("data/frames")
 SELECTED_FRAMES_JSON = FRAMES_ROOT / "selected_frames.json"
 
-OUT_DIR = Path("tiles/images")
-META_JSON = Path("tiles/metadata.json")
+# Tiles pool output (do not overwrite existing labeled sets; adjust paths if needed)
+OUT_DIR = Path("tiles_pool/images")
+META_JSON = Path("tiles_pool/metadata.json")
 
 TILE_SIZE = 640
 OVERLAP = 128  # 20%
