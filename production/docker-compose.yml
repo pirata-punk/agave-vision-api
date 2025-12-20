@@ -1,0 +1,115 @@
+version: '3.8'
+
+services:
+  # Redis message broker
+  redis:
+    image: redis:7-alpine
+    container_name: agave-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - agave-network
+
+  # Inference API service (FastAPI)
+  inference-api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.inference-api
+    container_name: agave-inference-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ../models:/app/models:ro
+      - ../configs:/app/configs:ro
+    environment:
+      - INFERENCE_DEVICE=${INFERENCE_DEVICE:-cuda}
+      - INFERENCE_MODEL_PATH=${INFERENCE_MODEL_PATH:-/app/models/yolov8n_pina/exp/weights/best.pt}
+      - INFERENCE_CONFIDENCE=${INFERENCE_CONFIDENCE:-0.25}
+      - REDIS_URL=redis://redis:6379
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - agave-network
+
+  # Stream Manager service (RTSP ingestion)
+  stream-manager:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.stream-manager
+    container_name: agave-stream-manager
+    volumes:
+      - ../models:/app/models:ro
+      - ../configs:/app/configs:ro
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - INFERENCE_DEVICE=${INFERENCE_DEVICE:-cuda}
+      - INFERENCE_MODEL_PATH=${INFERENCE_MODEL_PATH:-/app/models/yolov8n_pina/exp/weights/best.pt}
+      - INFERENCE_CONFIDENCE=${INFERENCE_CONFIDENCE:-0.25}
+      - CAMERA_cam_nave3_hornos_RTSP_URL=${CAMERA_cam_nave3_hornos_RTSP_URL:-}
+      - CAMERA_cam_nave4_difusor_RTSP_URL=${CAMERA_cam_nave4_difusor_RTSP_URL:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - agave-network
+
+  # Alert Router service (Redis consumer)
+  alert-router:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.alert-router
+    container_name: agave-alert-router
+    volumes:
+      - ../configs:/app/configs:ro
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - ALERTING_PROTOCOL=${ALERTING_PROTOCOL:-stdout}
+      - ALERTING_WEBHOOK_URL=${ALERTING_WEBHOOK_URL:-}
+      - ALERTING_DEBOUNCE_WINDOW_SECONDS=${ALERTING_DEBOUNCE_WINDOW_SECONDS:-5.0}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - agave-network
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  agave-network:
+    driver: bridge

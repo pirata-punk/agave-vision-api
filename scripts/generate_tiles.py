@@ -21,8 +21,8 @@ FRAMES_ROOT = Path("data/frames")
 SELECTED_FRAMES_JSON = FRAMES_ROOT / "selected_frames.json"
 
 # Tiles pool output (do not overwrite existing labeled sets; adjust paths if needed)
-OUT_DIR = Path("tiles_pool/images")
-META_JSON = Path("tiles_pool/metadata.json")
+OUT_DIR = Path("data/tiles_pool/images")
+META_JSON = Path("data/tiles_pool/metadata.json")
 
 TILE_SIZE = 640
 OVERLAP = 128  # 20%

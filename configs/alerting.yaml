@@ -1,0 +1,29 @@
+# Alert Configuration
+# Defines alerting behavior and delivery settings
+
+# Alert debouncing settings
+debounce_window_seconds: 5.0  # Time window for deduplication
+max_alerts_per_window: 1  # Maximum alerts per camera per window
+
+# Alert delivery protocol
+protocol: "stdout"  # Options: "stdout", "webhook", "hikvision"
+
+# Webhook configuration (if protocol is "webhook")
+webhook_url: null  # Example: "https://example.com/api/alerts"
+webhook_timeout_seconds: 5.0
+webhook_retry_attempts: 3
+
+# Hikvision configuration (if protocol is "hikvision")
+hikvision_host: null  # Example: "192.168.1.100"
+hikvision_port: 8000
+hikvision_username: null
+hikvision_password: null
+
+# Redis Streams configuration
+redis_stream_name: "alerts"
+redis_consumer_group: "alert_router"
+redis_max_stream_length: 10000  # Trim stream to prevent unbounded growth
+
+# Environment variable overrides:
+# ALERTING_PROTOCOL, ALERTING_WEBHOOK_URL
+# ALERTING_HIKVISION_HOST, ALERTING_HIKVISION_USERNAME, ALERTING_HIKVISION_PASSWORD

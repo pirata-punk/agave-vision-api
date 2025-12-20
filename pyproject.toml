@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agave-vision"
+version = "0.1.0"
+description = "Agave Vision API - YOLOv8 Object Detection for Industrial Cameras"
+readme = "CLAUDE.md"
+requires-python = ">=3.11"
+license = {text = "MIT"}
+authors = [
+    {name = "Agave Vision Team"}
+]
+
+dependencies = [
+    "numpy>=2.0.0",
+    "opencv-python>=4.8.0",
+    "ultralytics>=8.3.0",
+    "pyyaml>=6.0",
+    "shapely>=2.0.0",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+]
+
+[project.optional-dependencies]
+api = [
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "python-multipart>=0.0.6",
+]
+
+stream = [
+    "redis[hiredis]>=5.0.0",
+]
+
+alerts = [
+    "redis[hiredis]>=5.0.0",
+    "httpx>=0.25.0",
+]
+
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.5.0",
+]
+
+all = [
+    "agave-vision[api,stream,alerts,dev]",
+]
+
+[project.scripts]
+agave-extract-frames = "scripts.extract_frames:main"
+agave-generate-tiles = "scripts.generate_tiles:main"
+agave-clean-tiles = "scripts.clean_tiles:main"
+agave-build-dataset = "scripts.build_yolo_dataset:main"
+agave-train = "scripts.train_yolo_pina_detector:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E", "F", "I", "N", "W"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "-v --cov=src/agave_vision --cov-report=term-missing"
+asyncio_mode = "auto"

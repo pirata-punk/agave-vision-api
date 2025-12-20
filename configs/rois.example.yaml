@@ -1,0 +1,5 @@
+cameras:
+  - id: cam_1
+    forbidden_rois:
+      # Polygon as list of [x, y] points in pixel coordinates
+      - [[100, 100], [500, 100], [500, 400], [100, 400]]

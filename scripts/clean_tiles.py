@@ -20,12 +20,12 @@ import shutil
 # CONFIG
 # ------------------------------------------------------
 # Input: tiles pool
-TILES_DIR = Path("tiles_pool/images")
-META_JSON = Path("tiles_pool/metadata.json")
+TILES_DIR = Path("data/tiles_pool/images")
+META_JSON = Path("data/tiles_pool/metadata.json")
 
-# Output: manually labeled candidate set (do not overwrite existing labeled data)
-OUT_DIR = Path("tiles_man/images")
-OUT_META_JSON = Path("tiles_man/metadata_man.json")
+# Output: manually labeled candidate set (kept under tiles_pool/tiles_man)
+OUT_DIR = Path("data/tiles_pool/tiles_man/images")
+OUT_META_JSON = Path("data/tiles_pool/tiles_man/metadata_man.json")
 
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 

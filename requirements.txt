@@ -19,3 +19,6 @@ tqdm==4.67.1
 tzdata==2025.2
 urllib3==2.5.0
 wheel==0.45.1
+ultralytics>=8.3.0
+pyyaml
+shapely

@@ -1,0 +1,29 @@
+# Service Runtime Configuration
+# Shared configuration for all microservices
+
+inference:
+  model_path: "models/yolov8n_pina/exp/weights/best.pt"
+  confidence: 0.25  # Minimum confidence threshold for detections
+  iou_threshold: 0.45  # IoU threshold for NMS (non-maximum suppression)
+  device: "cuda"  # Options: "cuda", "cpu", "mps" (Apple Silicon)
+  batch_size: 1  # Batch size for inference (use 1 for lowest latency)
+  warmup_iterations: 5  # Number of warmup inferences on startup
+  image_size: 640  # Input image size for YOLO
+
+stream_manager:
+  frame_buffer_size: 10  # Maximum frames buffered per camera
+  reconnect_delay_seconds: 5.0  # Delay before reconnecting after RTSP failure
+  max_reconnect_attempts: 10  # Max reconnection attempts (-1 for infinite)
+  read_timeout_seconds: 30.0  # RTSP read timeout
+
+alerting:
+  debounce_window_seconds: 5.0  # Time window for alert deduplication
+  max_alerts_per_window: 1  # Max alerts per camera per window
+  protocol: "stdout"  # Options: "stdout", "webhook", "hikvision"
+  webhook_url: null  # Set if protocol is "webhook"
+  hikvision_host: null  # Set if protocol is "hikvision"
+
+# Environment variable overrides:
+# INFERENCE_MODEL_PATH, INFERENCE_DEVICE, INFERENCE_CONFIDENCE
+# STREAM_MANAGER_FRAME_BUFFER_SIZE, STREAM_MANAGER_RECONNECT_DELAY_SECONDS
+# ALERTING_PROTOCOL, ALERTING_WEBHOOK_URL

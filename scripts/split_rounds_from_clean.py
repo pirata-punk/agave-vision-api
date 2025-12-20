@@ -3,18 +3,18 @@
 Split tiles_man into 4 balanced, non-overlapping rounds using JSON metadata.
 
 Inputs:
-  - tiles_man/images/*.jpg
-  - tiles_man/metadata_man.json
+  - data/tiles_pool/tiles_man/images/*.jpg
+  - data/tiles_pool/tiles_man/metadata_man.json
 
 Outputs:
-  - tiles_round1/images/*.jpg
-  - tiles_round1/metadata_round1.json
-  - tiles_round2/images/*.jpg
-  - tiles_round2/metadata_round2.json
-  - tiles_round3/images/*.jpg
-  - tiles_round3/metadata_round3.json
-  - tiles_round4/images/*.jpg
-  - tiles_round4/metadata_round4.json
+  - data/tiles_pool/tiles_man/tiles_round1/images/*.jpg
+  - data/tiles_pool/tiles_man/tiles_round1/metadata_round1.json
+  - data/tiles_pool/tiles_man/tiles_round2/images/*.jpg
+  - data/tiles_pool/tiles_man/tiles_round2/metadata_round2.json
+  - data/tiles_pool/tiles_man/tiles_round3/images/*.jpg
+  - data/tiles_pool/tiles_man/tiles_round3/metadata_round3.json
+  - data/tiles_pool/tiles_man/tiles_round4/images/*.jpg
+  - data/tiles_pool/tiles_man/tiles_round4/metadata_round4.json
 """
 
 import json
@@ -25,29 +25,29 @@ from pathlib import Path
 from typing import Dict, List
 
 # ---------------- CONFIG ----------------
-MAN_IMAGES_DIR = Path("tiles_man/images")
-MAN_META_JSON = Path("tiles_man/metadata_man.json")
+MAN_IMAGES_DIR = Path("data/tiles_pool/tiles_man/images")
+MAN_META_JSON = Path("data/tiles_pool/tiles_man/metadata_man.json")
 
 ROUNDS = [
     {
         "name": "round1",
-        "images_dir": Path("tiles_round1/images"),
-        "meta_json": Path("tiles_round1/metadata_round1.json"),
+        "images_dir": Path("data/tiles_pool/tiles_man/tiles_round1/images"),
+        "meta_json": Path("data/tiles_pool/tiles_man/tiles_round1/metadata_round1.json"),
     },
     {
         "name": "round2",
-        "images_dir": Path("tiles_round2/images"),
-        "meta_json": Path("tiles_round2/metadata_round2.json"),
+        "images_dir": Path("data/tiles_pool/tiles_man/tiles_round2/images"),
+        "meta_json": Path("data/tiles_pool/tiles_man/tiles_round2/metadata_round2.json"),
     },
     {
         "name": "round3",
-        "images_dir": Path("tiles_round3/images"),
-        "meta_json": Path("tiles_round3/metadata_round3.json"),
+        "images_dir": Path("data/tiles_pool/tiles_man/tiles_round3/images"),
+        "meta_json": Path("data/tiles_pool/tiles_man/tiles_round3/metadata_round3.json"),
     },
     {
         "name": "round4",
-        "images_dir": Path("tiles_round4/images"),
-        "meta_json": Path("tiles_round4/metadata_round4.json"),
+        "images_dir": Path("data/tiles_pool/tiles_man/tiles_round4/images"),
+        "meta_json": Path("data/tiles_pool/tiles_man/tiles_round4/metadata_round4.json"),
     },
 ]
 

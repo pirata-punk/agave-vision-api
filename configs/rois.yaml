@@ -1,0 +1,39 @@
+# ROI (Region of Interest) Configuration
+# Defines forbidden zones and alert rules per camera
+
+cameras:
+  - camera_id: cam_nave3_hornos
+    forbidden_rois:
+      - name: loading_zone
+        points:
+          - [100, 100]
+          - [500, 100]
+          - [500, 400]
+          - [100, 400]
+      # Add more ROIs as needed
+      # - name: danger_zone_2
+      #   points:
+      #     - [600, 200]
+      #     - [800, 200]
+      #     - [800, 500]
+      #     - [600, 500]
+
+    # Classes that are allowed in forbidden ROIs (no alerts)
+    allowed_classes: [pine, worker]
+
+    # Classes that trigger alerts when in forbidden ROIs
+    alert_classes: [object]
+
+  - camera_id: cam_nave4_difusor
+    forbidden_rois:
+      - name: danger_zone_1
+        points:
+          - [200, 150]
+          - [600, 150]
+          - [600, 500]
+          - [200, 500]
+    allowed_classes: [pine, worker]
+    alert_classes: [object]
+
+# Note: Points are in pixel coordinates [x, y]
+# ROI polygons should be defined clockwise or counter-clockwise
