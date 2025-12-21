@@ -1,0 +1,25 @@
+# Camera Registry Configuration
+# Defines all cameras in the system with their RTSP connection details
+
+cameras:
+  - id: cam_nave3_hornos
+    name: "Nave 3 Hornos B CAM 3"
+    rtsp_url: "rtsp://admin:password@192.168.1.10:554/Streaming/Channels/101"
+    enabled: true
+    fps_target: 5.0  # Target frame sampling rate (frames per second)
+
+  - id: cam_nave4_difusor
+    name: "Nave 4 Difusor B"
+    rtsp_url: "rtsp://admin:password@192.168.1.11:554/Streaming/Channels/101"
+    enabled: true
+    fps_target: 5.0
+
+# Example disabled camera
+#  - id: cam_example_disabled
+#    name: "Example Disabled Camera"
+#    rtsp_url: "rtsp://admin:password@192.168.1.12:554/Streaming/Channels/101"
+#    enabled: false
+#    fps_target: 5.0
+
+# Note: RTSP URLs can be overridden via environment variables:
+# CAMERA_cam_nave3_hornos_RTSP_URL=rtsp://...

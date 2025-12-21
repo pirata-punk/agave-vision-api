@@ -5,14 +5,14 @@ Use this doc as a running scratchpad for architecture, planning, and operational
 ## Pipeline Flow
 - Videos → frames (dedup via MAD/SSIM) → tiles_pool → tiles_man → tiles_round{1..4} → tiles_yolo → train/infer.
 - Scripts (no auto-run):
-  - `scripts/extract_frames.py`: sample/dedup frames from `data/videos` → `data/frames` + `frames_manifest.json`.
-  - `scripts/scan_frames_metadata.py`: summarize frames → `frames_metadata.json`.
-  - `scripts/generate_tiles.py`: frames → `data/tiles_pool` tiles + metadata.json.
-  - `scripts/clean_tiles.py`: tiles_pool → tiles_man (edge filter + quotas) → metadata_man.json.
-  - `scripts/standardize_round_filenames.py`: normalize filenames in tiles_round1..4 (decode %xx, strip hashed prefixes, strip images/ artifacts, replace spaces with `_`, collapse `__`).
-  - `scripts/split_rounds_from_clean.py`: (if needed) split tiles_man into rounds with JSON metadata.
-  - `scripts/build_yolo_dataset.py`: unify rounds into `data/tiles_yolo` with train/val/test splits, `configs/yolo_data.yaml`, `metadata.json`.
-  - `scripts/infer_alert.py`: sample alerting pipeline using ROIs + YOLO model.
+  - `ingestion/scripts/extract_frames.py`: sample/dedup frames from `data/videos` → `data/frames` + `frames_manifest.json`.
+  - `ingestion/scripts/scan_frames_metadata.py`: summarize frames → `frames_metadata.json`.
+  - `ingestion/scripts/generate_tiles.py`: frames → `data/tiles_pool` tiles + metadata.json.
+  - `ingestion/scripts/clean_tiles.py`: tiles_pool → tiles_man (edge filter + quotas) → metadata_man.json.
+  - `ingestion/scripts/standardize_round_filenames.py`: normalize filenames in tiles_round1..4 (decode %xx, strip hashed prefixes, strip images/ artifacts, replace spaces with `_`, collapse `__`).
+  - `ingestion/scripts/split_rounds_from_clean.py`: (if needed) split tiles_man into rounds with JSON metadata.
+  - `ingestion/scripts/build_yolo_dataset.py`: unify rounds into `data/tiles_yolo` with train/val/test splits, `configs/yolo_data.yaml`, `metadata.json`.
+  - `production/scripts/infer_alert.py`: sample alerting pipeline using ROIs + YOLO model.
 
 ## Filename Standardization Rules (rounds 1–4)
 - Decode percent-encodings (`%20` → space) before normalization.
@@ -35,7 +35,7 @@ Use this doc as a running scratchpad for architecture, planning, and operational
 ## Alerting Reference
 - Use YOLO detections; alert when class `object` enters forbidden ROI. Allow `pine` and `worker`.
 - ROI config example at `configs/rois.example.yaml`.
-- Sample code: `scripts/infer_alert.py`.
+- Sample code: `production/scripts/infer_alert.py`.
 
 ## Open Questions / TODO
 - Validate remaining unmatched image/label stems after standardization; resolve any edge cases.

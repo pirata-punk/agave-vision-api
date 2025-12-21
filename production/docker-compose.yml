@@ -22,7 +22,7 @@ services:
   inference-api:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.inference-api
+      dockerfile: production/Dockerfile.inference-api
     container_name: agave-inference-api
     ports:
       - "8000:8000"
@@ -58,7 +58,7 @@ services:
   stream-manager:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.stream-manager
+      dockerfile: production/Dockerfile.stream-manager
     container_name: agave-stream-manager
     volumes:
       - ../models:/app/models:ro
@@ -89,7 +89,7 @@ services:
   alert-router:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.alert-router
+      dockerfile: production/Dockerfile.alert-router
     container_name: agave-alert-router
     volumes:
       - ../configs:/app/configs:ro

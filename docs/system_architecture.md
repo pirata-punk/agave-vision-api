@@ -87,8 +87,8 @@ High-level blueprint for serving the YOLOv8 pina/worker/object detector in produ
 - **CI checks**: lint/test scripts; optional minimal smoke test for inference load.
 
 ## Real-Time Demo Hooks
-- `scripts/realtime_yolo_stream.py`: reads webcam/RTSP/file, overlays detections, optional ROI alerts, JSON alerts to stdout.
-- `scripts/demo_video_infer.py`: file-to-file annotated video for offline checks.
+- `production/scripts/realtime_yolo_stream.py`: reads webcam/RTSP/file, overlays detections, optional ROI alerts, JSON alerts to stdout.
+- `production/scripts/demo_video_infer.py`: file-to-file annotated video for offline checks.
 
 ## Alert Protocol Adapter (Hikvision TBD)
 - Define an adapter interface: accepts alert payload `{camera_id, ts, bbox, class, confidence, roi_hit}` and translates to:

@@ -111,13 +111,13 @@ pip install -e .[all]
 
 ```bash
 # Extract frames from videos
-python ingestion/cli.py extract-frames \
+./agave-ingest extract-frames \
     --video-dir data/videos \
     --output-dir data/frames \
     --sample-rate 30
 
 # Generate tiles for labeling
-python ingestion/cli.py generate-tiles \
+./agave-ingest generate-tiles \
     --frames-dir data/frames \
     --output-dir data/tiles_pool \
     --tile-size 640 \
@@ -126,7 +126,7 @@ python ingestion/cli.py generate-tiles \
 # Manually label tiles using your preferred tool (Roboflow, LabelImg, etc.)
 # Then build YOLO dataset
 
-python ingestion/cli.py build-dataset \
+./agave-ingest build-dataset \
     --rounds-dir data/tiles_pool/tiles_man \
     --output-dir data/tiles_yolo \
     --classes object pine worker \
@@ -135,13 +135,13 @@ python ingestion/cli.py build-dataset \
     --test-ratio 0.15
 ```
 
-See [ingestion/README.md](ingestion/README.md) for details.
+See [src/agave_vision/ingestion/README.md](src/agave_vision/ingestion/README.md) for details.
 
 #### 2. Train Model (Training Workbench)
 
 ```bash
 # Train a new model
-python training/cli.py train \
+./agave-train train \
     --data-yaml configs/yolo_data.yaml \
     --model yolov8n \
     --epochs 100 \
@@ -150,12 +150,12 @@ python training/cli.py train \
     --version v1_baseline
 
 # Evaluate on test set
-python training/cli.py evaluate \
+./agave-train evaluate \
     --model training/runs/v1_baseline/weights/best.pt \
     --split test
 ```
 
-See [training/README.md](training/README.md) for details.
+See [src/agave_vision/training/README.md](src/agave_vision/training/README.md) for details.
 
 #### 3. Register Model (Model Registry)
 
@@ -172,7 +172,7 @@ registry.register_model(
 )
 ```
 
-See [models/README.md](models/README.md) for details.
+See [src/agave_vision/models/README.md](src/agave_vision/models/README.md) for details.
 
 #### 4. Deploy to Production
 
@@ -283,7 +283,11 @@ GET /config/cameras
 
 ## Modules
 
+All modules are organized under `src/agave_vision/` as a unified Python package.
+
 ### 1. Ingestion Module
+
+**Location:** `src/agave_vision/ingestion/`
 
 Handles data preparation from raw videos to YOLO-ready datasets.
 
@@ -295,14 +299,26 @@ Handles data preparation from raw videos to YOLO-ready datasets.
 
 **CLI:**
 ```bash
-python ingestion/cli.py extract-frames --help
-python ingestion/cli.py generate-tiles --help
-python ingestion/cli.py build-dataset --help
+./agave-ingest extract-frames --help
+./agave-ingest generate-tiles --help
+./agave-ingest build-dataset --help
+
+# Or use Python module directly:
+python -m agave_vision.ingestion.cli --help
 ```
 
-See [ingestion/README.md](ingestion/README.md) for complete documentation.
+**Programmatic Usage:**
+```python
+from agave_vision.ingestion.static.video_processor import VideoProcessor
+from agave_vision.ingestion.static.tile_generator import TileGenerator
+from agave_vision.ingestion.static.dataset_builder import DatasetBuilder
+```
+
+See [src/agave_vision/ingestion/README.md](src/agave_vision/ingestion/README.md) for complete documentation.
 
 ### 2. Training Workbench
+
+**Location:** `src/agave_vision/training/`
 
 Dedicated workspace for training, evaluating, and comparing YOLO models.
 
@@ -314,14 +330,25 @@ Dedicated workspace for training, evaluating, and comparing YOLO models.
 
 **CLI:**
 ```bash
-python training/cli.py train --help
-python training/cli.py evaluate --help
-python training/cli.py compare --help
+./agave-train train --help
+./agave-train evaluate --help
+./agave-train compare --help
+
+# Or use Python module directly:
+python -m agave_vision.training.cli --help
 ```
 
-See [training/README.md](training/README.md) for complete documentation.
+**Programmatic Usage:**
+```python
+from agave_vision.training.trainer import YOLOTrainer
+from agave_vision.training.evaluator import ModelEvaluator
+```
+
+See [src/agave_vision/training/README.md](src/agave_vision/training/README.md) for complete documentation.
 
 ### 3. Model Registry
+
+**Location:** `src/agave_vision/models/`
 
 Centralized model versioning and metadata management.
 
@@ -339,9 +366,11 @@ registry = ModelRegistry("models")
 model = registry.get_latest(tag="production")
 ```
 
-See [models/README.md](models/README.md) for complete documentation.
+See [src/agave_vision/models/README.md](src/agave_vision/models/README.md) for complete documentation.
 
 ### 4. Production Services
+
+**Location:** `src/agave_vision/services/`
 
 Containerized microservices for real-time RTSP streaming and alerting.
 
@@ -350,7 +379,19 @@ Containerized microservices for real-time RTSP streaming and alerting.
 - **Stream Manager** - RTSP stream ingestion and processing
 - **Alert Router** - Alert delivery with configurable protocols
 
-See production deployment section below for details.
+**Demo Scripts:**
+```bash
+# Run inference on video file
+python -m agave_vision.services.demos.demo_video_infer
+
+# Test ROI alerting
+python -m agave_vision.services.demos.infer_alert
+
+# Real-time RTSP stream
+python -m agave_vision.services.demos.realtime_yolo_stream
+```
+
+See [src/agave_vision/services/README.md](src/agave_vision/services/README.md) and production deployment section for details.
 
 ## Testing
 
@@ -395,77 +436,107 @@ ALERTING_WEBHOOK_URL=https://...
 agave-vision-api/
 ├── pyproject.toml                   # Package configuration
 ├── README.md                        # This file
+├── agave-ingest                     # 🚀 Ingestion CLI (executable)
+├── agave-train                      # 🚀 Training CLI (executable)
 │
-├── ingestion/                       # 📦 MODULE 1: Data Ingestion
-│   ├── cli.py                       # Ingestion CLI
-│   ├── configs/                     # Ingestion configs
-│   └── README.md                    # Ingestion documentation
-│
-├── training/                        # 📦 MODULE 2: Training Workbench
-│   ├── cli.py                       # Training CLI
-│   ├── configs/                     # Training hyperparameters
-│   ├── runs/                        # Training outputs (gitignored)
-│   └── README.md                    # Training documentation
-│
-├── models/                          # 📦 MODULE 3: Model Registry
-│   ├── registry.yaml                # Model registry index
-│   ├── v1_baseline/                 # Versioned models
-│   │   ├── weights/best.pt
-│   │   └── metadata.json
-│   └── README.md                    # Registry documentation
-│
-├── production/                      # 📦 MODULE 4: Production Services
-│   ├── docker-compose.yml           # Service orchestration
-│   ├── Dockerfile.inference-api     # API service
-│   ├── Dockerfile.stream-manager    # Stream service
-│   └── Dockerfile.alert-router      # Alert service
-│
-├── src/agave_vision/                # Core library (shared)
-│   ├── ingestion/                   # Ingestion implementation
-│   │   └── static/                  # Static data pipeline
-│   │       ├── video_processor.py
-│   │       ├── tile_generator.py
-│   │       └── dataset_builder.py
-│   ├── training/                    # Training implementation
-│   │   ├── trainer.py
-│   │   └── evaluator.py
-│   ├── models/                      # Model registry implementation
-│   │   └── registry.py
-│   ├── core/                        # Production core logic
+├── src/agave_vision/                # 📦 Main Python package
+│   │
+│   ├── ingestion/                   # MODULE 1: Data Ingestion
+│   │   ├── cli.py                   # CLI implementation
+│   │   ├── static/                  # Static pipeline classes
+│   │   │   ├── video_processor.py
+│   │   │   ├── tile_generator.py
+│   │   │   └── dataset_builder.py
+│   │   ├── extract_frames.py        # Standalone scripts
+│   │   ├── generate_tiles.py
+│   │   ├── clean_tiles.py
+│   │   ├── build_yolo_dataset.py
+│   │   ├── split_rounds_from_clean.py
+│   │   ├── standardize_round_filenames.py
+│   │   ├── scan_frames_metadata.py
+│   │   ├── configs/
+│   │   └── README.md
+│   │
+│   ├── training/                    # MODULE 2: Training Workbench
+│   │   ├── cli.py                   # CLI implementation
+│   │   ├── trainer.py               # YOLOTrainer class
+│   │   ├── evaluator.py             # ModelEvaluator class
+│   │   ├── train_yolo_pina_detector.py
+│   │   ├── configs/
+│   │   └── README.md
+│   │
+│   ├── models/                      # MODULE 3: Model Registry
+│   │   ├── registry.py              # ModelRegistry class
+│   │   └── README.md
+│   │
+│   ├── services/                    # MODULE 4: Production Services
+│   │   ├── inference_api/           # FastAPI service
+│   │   │   ├── app.py
+│   │   │   ├── routes.py
+│   │   │   ├── schemas.py
+│   │   │   └── dependencies.py
+│   │   ├── stream_manager/          # RTSP stream service
+│   │   │   ├── main.py
+│   │   │   ├── camera.py
+│   │   │   └── publisher.py
+│   │   ├── alert_router/            # Alert routing service
+│   │   │   ├── main.py
+│   │   │   ├── consumer.py
+│   │   │   ├── debounce.py
+│   │   │   └── protocols/
+│   │   ├── demos/                   # Demo scripts
+│   │   │   ├── demo_video_infer.py
+│   │   │   ├── infer_alert.py
+│   │   │   └── realtime_yolo_stream.py
+│   │   └── README.md
+│   │
+│   ├── core/                        # Shared core logic
 │   │   ├── inference.py             # YOLO wrapper
 │   │   ├── roi.py                   # ROI filtering
 │   │   ├── alerts.py                # Alert structures
 │   │   └── frames.py                # Frame utilities
+│   │
 │   ├── config/                      # Configuration management
-│   │   ├── models.py                # Pydantic configs
+│   │   ├── models.py                # Pydantic config models
 │   │   └── loader.py                # Config loader
-│   ├── services/                    # Production services
-│   │   ├── inference_api/           # FastAPI service
-│   │   ├── stream_manager/          # RTSP ingestion
-│   │   └── alert_router/            # Alert routing
+│   │
 │   └── utils/                       # Shared utilities
 │       ├── logging.py
 │       └── video.py
 │
-├── configs/                         # YAML configurations
+├── production/                      # 🐳 Docker deployment (no code)
+│   ├── docker-compose.yml           # Service orchestration
+│   ├── Dockerfile.inference-api
+│   ├── Dockerfile.stream-manager
+│   └── Dockerfile.alert-router
+│
+├── models/                          # 💾 Model artifacts (gitignored)
+│   ├── registry.yaml                # Model registry index
+│   └── v1_baseline/                 # Versioned model weights
+│       ├── weights/best.pt
+│       └── metadata.json
+│
+├── training/                        # 📊 Training outputs (gitignored)
+│   └── runs/                        # Training run directories
+│
+├── configs/                         # ⚙️ YAML configurations
 │   ├── yolo_data.yaml               # YOLO dataset config
 │   ├── cameras.yaml                 # Camera registry
 │   ├── rois.yaml                    # ROI definitions
 │   ├── services.yaml                # Service runtime config
 │   └── alerting.yaml                # Alert rules
 │
-├── tests/                           # Test suite
-│   ├── unit/
-│   └── integration/
-│
-├── data/                            # Training data (gitignored)
+├── data/                            # 📁 Training data (gitignored)
 │   ├── videos/                      # Raw videos
 │   ├── frames/                      # Extracted frames
 │   ├── tiles_pool/                  # Generated tiles
 │   └── tiles_yolo/                  # YOLO dataset
 │
-├── scripts/                         # Legacy scripts (deprecated)
-└── docs/                            # Documentation
+├── tests/                           # 🧪 Test suite
+│   ├── unit/
+│   └── integration/
+│
+└── docs/                            # 📚 Documentation
 ```
 
 ## Development

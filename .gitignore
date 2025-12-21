@@ -34,6 +34,14 @@ dist/
 .eggs/
 *.egg
 
+# ---- Python Tool Caches ----
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.coverage
+htmlcov/
+
 # ---- Logs & Temp Files ----
 *.log
 *.tmp
@@ -75,6 +83,13 @@ firebase-adminsdk-*.json
 config.local.*
 local_settings.py
 settings.local.*
+
+# Project-specific config files with secrets (keep .example.yaml files)
+configs/cameras.yaml
+configs/rois.yaml
+configs/services.yaml
+# Keep .example.yaml files in git:
+!configs/*.example.yaml
 
 # ---- Jupyter & ML Artifacts ----
 .ipynb_checkpoints/

@@ -34,34 +34,34 @@ videos → frames (deduped) → tiles_pool → tiles_man → tiles_round{1..4} �
 
 ### Pipeline Scripts (in order)
 
-1. **Extract frames**: `python scripts/extract_frames.py`
+1. **Extract frames**: `python ingestion/scripts/extract_frames.py`
    - Input: `data/videos/`
    - Output: `data/frames/` + `frames_manifest.json`
    - Deduplicates frames using MAD/SSIM
 
-2. **Scan frame metadata**: `python scripts/scan_frames_metadata.py`
+2. **Scan frame metadata**: `python ingestion/scripts/scan_frames_metadata.py`
    - Output: `frames_metadata.json`
 
-3. **Generate tiles**: `python scripts/generate_tiles.py`
+3. **Generate tiles**: `python ingestion/scripts/generate_tiles.py`
    - Input: `data/frames/`
    - Output: `data/tiles_pool/` + metadata.json
 
-4. **Clean tiles**: `python scripts/clean_tiles.py`
+4. **Clean tiles**: `python ingestion/scripts/clean_tiles.py`
    - Input: `data/tiles_pool/`
    - Output: `data/tiles_pool/tiles_man/` + metadata_man.json
    - Applies edge filters and quotas
 
-5. **Standardize filenames**: `python scripts/standardize_round_filenames.py`
+5. **Standardize filenames**: `python ingestion/scripts/standardize_round_filenames.py`
    - Normalizes filenames in tiles_round{1..4}
    - Decodes percent-encodings, strips hashes, removes spaces, collapses underscores
    - Maintains 1:1 image/label pairing
 
-6. **Build YOLO dataset**: `python scripts/build_yolo_dataset.py`
+6. **Build YOLO dataset**: `python ingestion/scripts/build_yolo_dataset.py`
    - Input: `data/tiles_pool/tiles_man/tiles_round{1..4}/`
    - Output: `data/tiles_yolo/{images,labels}/{train,val,test}` + `configs/yolo_data.yaml` + metadata.json
    - Deterministic split (seed=123): 70% train, 15% val, 15% test
 
-7. **Train model**: `python scripts/train_yolo_pina_detector.py`
+7. **Train model**: `python training/scripts/train_yolo_pina_detector.py`
    - Trains YOLOv8n on the merged dataset
    - Output: `models/yolov8n_pina/exp/weights/best.pt`
 
@@ -69,13 +69,13 @@ videos → frames (deduped) → tiles_pool → tiles_man → tiles_round{1..4} �
 
 ```bash
 # After building the dataset with build_yolo_dataset.py
-python scripts/train_yolo_pina_detector.py
+python training/scripts/train_yolo_pina_detector.py
 
 # Or manually with ultralytics CLI:
 yolo detect train model=yolov8n.pt data=configs/yolo_data.yaml epochs=100 imgsz=640 batch=16
 ```
 
-Training config is in `scripts/train_yolo_pina_detector.py`:
+Training config is in `training/scripts/train_yolo_pina_detector.py`:
 - Base model: yolov8n.pt
 - Epochs: 100
 - Image size: 640
@@ -87,7 +87,7 @@ Training config is in `scripts/train_yolo_pina_detector.py`:
 ### Real-time streaming
 
 ```bash
-python scripts/realtime_yolo_stream.py
+python production/scripts/realtime_yolo_stream.py
 ```
 
 - Supports webcam (SOURCE=0), RTSP URLs, or video files
@@ -98,7 +98,7 @@ python scripts/realtime_yolo_stream.py
 ### Alert pipeline (programmatic)
 
 ```bash
-python scripts/infer_alert.py
+python production/scripts/infer_alert.py
 ```
 
 - Loads ROI config from YAML (see `configs/rois.example.yaml`)
@@ -109,7 +109,7 @@ python scripts/infer_alert.py
 ### Demo video inference
 
 ```bash
-python scripts/demo_video_infer.py
+python production/scripts/demo_video_infer.py
 ```
 
 - File-to-file annotated video output for offline review
@@ -180,7 +180,14 @@ configs/
   yolo_data.yaml   # YOLO dataset config (paths, class names)
   rois.example.yaml  # ROI polygon definitions per camera
 
-scripts/          # All pipeline and inference scripts (see Pipeline Flow)
+ingestion/
+  scripts/        # Data pipeline scripts (frames/tiles/dataset)
+
+training/
+  scripts/        # Training helpers
+
+production/
+  scripts/        # Inference + demo scripts
 
 models/
   yolov8n_pina/   # Training output directory (exp/weights/best.pt)
