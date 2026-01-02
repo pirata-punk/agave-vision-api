@@ -21,8 +21,13 @@ cameras:
     # Classes that are allowed in forbidden ROIs (no alerts)
     allowed_classes: [pine, worker]
 
-    # Classes that trigger alerts when in forbidden ROIs
+    # Classes that trigger alerts when in forbidden ROIs (LEGACY - only used when strict_mode: false)
     alert_classes: [object]
+
+    # NEW: Strict mode (whitelist approach) - DEFAULT: true
+    # If true: Alert on ANYTHING that is NOT in allowed_classes
+    # If false: Only alert on classes in alert_classes (legacy behavior)
+    strict_mode: true
 
   - camera_id: cam_nave4_difusor
     forbidden_rois:
@@ -34,6 +39,10 @@ cameras:
           - [200, 500]
     allowed_classes: [pine, worker]
     alert_classes: [object]
+    strict_mode: true  # NEW: Recommended to keep as true
 
-# Note: Points are in pixel coordinates [x, y]
-# ROI polygons should be defined clockwise or counter-clockwise
+# Notes:
+# - Points are in pixel coordinates [x, y]
+# - ROI polygons should be defined clockwise or counter-clockwise
+# - strict_mode is RECOMMENDED for production (alerts on anything not explicitly allowed)
+# - Use the ROI selector tool (examples/roi_selector.py) to define ROI points interactively

@@ -3,7 +3,14 @@
 from agave_vision.core.inference import YOLOInference
 from agave_vision.core.roi import ROIPolygon, CameraROI, ROIManager
 from agave_vision.core.alerts import AlertEvent, AlertDebouncer
-from agave_vision.core.frames import tile_image, calculate_sharpness
+from agave_vision.core.frames import (
+    sliding_window_tiles,
+    compute_frame_sharpness,
+    compute_frame_brightness,
+    is_similar_frame,
+    resize_keep_aspect,
+    draw_detection_box,
+)
 
 __all__ = [
     "YOLOInference",
@@ -12,6 +19,10 @@ __all__ = [
     "ROIManager",
     "AlertEvent",
     "AlertDebouncer",
-    "tile_image",
-    "calculate_sharpness",
+    "sliding_window_tiles",
+    "compute_frame_sharpness",
+    "compute_frame_brightness",
+    "is_similar_frame",
+    "resize_keep_aspect",
+    "draw_detection_box",
 ]

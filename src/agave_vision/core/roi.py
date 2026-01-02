@@ -50,16 +50,24 @@ class CameraROI:
     camera_id: str
     forbidden_zones: List[ROIPolygon]
     allowed_classes: Set[str] = field(default_factory=lambda: {"pine", "worker"})
-    alert_classes: Set[str] = field(default_factory=lambda: {"object"})
+    alert_classes: Set[str] = field(default_factory=lambda: {"object"})  # Legacy, kept for backward compatibility
+    strict_mode: bool = True  # New: Whitelist approach - alert on anything NOT in allowed_classes
 
     def should_alert(self, detection: Detection) -> bool:
         """
         Determine if a detection should trigger an alert.
 
-        Alert is triggered if:
-        1. Detection class is in alert_classes (e.g., "object")
-        2. Detection class is NOT in allowed_classes
-        3. Detection center point is inside any forbidden zone
+        STRICT MODE (default, whitelist approach):
+            Alert is triggered if:
+            1. Detection class is NOT in allowed_classes
+            2. Detection center point is inside any forbidden zone
+            3. This includes unknown/low-confidence detections
+
+        LEGACY MODE (strict_mode=False):
+            Alert is triggered if:
+            1. Detection class is in alert_classes (e.g., "object")
+            2. Detection class is NOT in allowed_classes
+            3. Detection center point is inside any forbidden zone
 
         Args:
             detection: Detection object from inference
@@ -67,20 +75,35 @@ class CameraROI:
         Returns:
             True if alert should be triggered
         """
-        # Check if class triggers alerts
-        if detection.class_name not in self.alert_classes:
+        # Strict mode: Alert on ANYTHING that is NOT in allowed_classes
+        if self.strict_mode:
+            # Check if class is explicitly allowed
+            if detection.class_name in self.allowed_classes:
+                return False
+
+            # Check if detection is in any forbidden zone
+            for zone in self.forbidden_zones:
+                if zone.contains_point(detection.center):
+                    return True
+
             return False
 
-        # Check if class is explicitly allowed (override)
-        if detection.class_name in self.allowed_classes:
+        # Legacy mode: Only alert on specific alert_classes
+        else:
+            # Check if class triggers alerts
+            if detection.class_name not in self.alert_classes:
+                return False
+
+            # Check if class is explicitly allowed (override)
+            if detection.class_name in self.allowed_classes:
+                return False
+
+            # Check if detection is in any forbidden zone
+            for zone in self.forbidden_zones:
+                if zone.contains_point(detection.center):
+                    return True
+
             return False
-
-        # Check if detection is in any forbidden zone
-        for zone in self.forbidden_zones:
-            if zone.contains_point(detection.center):
-                return True
-
-        return False
 
     def filter_detections(self, detections: List[Detection]) -> List[Detection]:
         """
@@ -135,12 +158,14 @@ class ROIManager:
             # Parse allowed and alert classes
             allowed_classes = set(cam_config.get("allowed_classes", ["pine", "worker"]))
             alert_classes = set(cam_config.get("alert_classes", ["object"]))
+            strict_mode = cam_config.get("strict_mode", True)  # Default to strict mode
 
             self.camera_rois[camera_id] = CameraROI(
                 camera_id=camera_id,
                 forbidden_zones=forbidden_zones,
                 allowed_classes=allowed_classes,
                 alert_classes=alert_classes,
+                strict_mode=strict_mode,
             )
 
     def get_camera_rois(self, camera_id: str) -> Optional[CameraROI]:

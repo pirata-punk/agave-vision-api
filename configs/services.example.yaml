@@ -9,6 +9,7 @@ inference:
   batch_size: 1  # Batch size for inference (use 1 for lowest latency)
   warmup_iterations: 5  # Number of warmup inferences on startup
   image_size: 640  # Input image size for YOLO
+  unknown_threshold: 0.15  # NEW: Confidence below this marks detection as "unknown"
 
 stream_manager:
   frame_buffer_size: 10  # Maximum frames buffered per camera

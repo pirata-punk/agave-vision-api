@@ -23,19 +23,46 @@ class Detection:
     confidence: float
     bbox: Tuple[float, float, float, float]  # x1, y1, x2, y2
     center: Tuple[float, float]  # cx, cy
+    is_unknown: bool = False  # True if detection has low confidence or unclassified
 
     @staticmethod
-    def from_yolo_box(box, cls_id: int, conf: float, class_names: Dict[int, str]) -> "Detection":
-        """Create Detection from YOLO box tensor."""
+    def from_yolo_box(
+        box,
+        cls_id: int,
+        conf: float,
+        class_names: Dict[int, str],
+        unknown_threshold: float = 0.15,
+    ) -> "Detection":
+        """
+        Create Detection from YOLO box tensor.
+
+        Args:
+            box: YOLO box coordinates
+            cls_id: Class ID
+            conf: Confidence score
+            class_names: Mapping of class IDs to names
+            unknown_threshold: Confidence below this is marked as unknown
+
+        Returns:
+            Detection object with is_unknown flag set if confidence is low
+        """
         x1, y1, x2, y2 = box.tolist()
         cx = (x1 + x2) / 2.0
         cy = (y1 + y2) / 2.0
+
+        # Mark as unknown if confidence is below threshold
+        is_unknown = conf < unknown_threshold
+        class_name = class_names[int(cls_id)]
+        if is_unknown:
+            class_name = f"unknown_{class_name}"  # Prefix with "unknown_"
+
         return Detection(
             class_id=int(cls_id),
-            class_name=class_names[int(cls_id)],
+            class_name=class_name,
             confidence=float(conf),
             bbox=(x1, y1, x2, y2),
             center=(cx, cy),
+            is_unknown=is_unknown,
         )
 
 
@@ -63,12 +90,14 @@ class YOLOInference:
         iou: float = 0.45,
         device: str = "cuda",
         imgsz: int = 640,
+        unknown_threshold: float = 0.15,
     ):
         self.model_path = Path(model_path)
         self.conf = conf
         self.iou = iou
         self.device = device
         self.imgsz = imgsz
+        self.unknown_threshold = unknown_threshold
 
         # Load model
         if not self.model_path.exists():
@@ -129,7 +158,9 @@ class YOLOInference:
 
         detections = []
         for box, cls_id, confidence in zip(dets.boxes.xyxy, dets.boxes.cls, dets.boxes.conf):
-            detection = Detection.from_yolo_box(box, cls_id, confidence, self.class_names)
+            detection = Detection.from_yolo_box(
+                box, cls_id, confidence, self.class_names, self.unknown_threshold
+            )
             detections.append(detection)
 
         return detections
@@ -162,7 +193,9 @@ class YOLOInference:
             for box, cls_id, confidence in zip(
                 result.boxes.xyxy, result.boxes.cls, result.boxes.conf
             ):
-                detection = Detection.from_yolo_box(box, cls_id, confidence, self.class_names)
+                detection = Detection.from_yolo_box(
+                    box, cls_id, confidence, self.class_names, self.unknown_threshold
+                )
                 frame_detections.append(detection)
 
             all_detections.append(frame_detections)

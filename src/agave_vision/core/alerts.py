@@ -25,6 +25,10 @@ class AlertEvent:
         detection: The detection that triggered the alert
         roi_hit: Whether detection was in a forbidden ROI
         frame_id: Optional identifier for the source frame
+        roi_name: Name of the ROI that was violated (NEW)
+        violation_type: Type of violation (NEW: forbidden_class, unknown_object, low_confidence)
+        allowed_classes: List of classes allowed in the ROI (NEW)
+        strict_mode: Whether strict mode (whitelist) was enabled (NEW)
     """
 
     camera_id: str
@@ -32,6 +36,10 @@ class AlertEvent:
     detection: Detection
     roi_hit: bool
     frame_id: Optional[str] = None
+    roi_name: Optional[str] = None  # NEW
+    violation_type: str = "forbidden_class"  # NEW: forbidden_class, unknown_object, low_confidence
+    allowed_classes: Optional[List[str]] = None  # NEW
+    strict_mode: bool = True  # NEW
 
     def to_dict(self) -> Dict[str, Any]:
         """
@@ -49,9 +57,14 @@ class AlertEvent:
                 "confidence": self.detection.confidence,
                 "bbox": list(self.detection.bbox),
                 "center": list(self.detection.center),
+                "is_unknown": self.detection.is_unknown,  # NEW
             },
             "roi_hit": self.roi_hit,
             "frame_id": self.frame_id,
+            "roi_name": self.roi_name,  # NEW
+            "violation_type": self.violation_type,  # NEW
+            "allowed_classes": self.allowed_classes,  # NEW
+            "strict_mode": self.strict_mode,  # NEW
         }
 
     @classmethod
@@ -72,6 +85,7 @@ class AlertEvent:
             confidence=det_data["confidence"],
             bbox=tuple(det_data["bbox"]),
             center=tuple(det_data["center"]),
+            is_unknown=det_data.get("is_unknown", False),  # NEW
         )
 
         return cls(
@@ -80,6 +94,10 @@ class AlertEvent:
             detection=detection,
             roi_hit=data["roi_hit"],
             frame_id=data.get("frame_id"),
+            roi_name=data.get("roi_name"),  # NEW
+            violation_type=data.get("violation_type", "forbidden_class"),  # NEW
+            allowed_classes=data.get("allowed_classes"),  # NEW
+            strict_mode=data.get("strict_mode", True),  # NEW
         )
 
 

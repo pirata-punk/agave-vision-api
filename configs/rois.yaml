@@ -1,39 +1,155 @@
-# ROI (Region of Interest) Configuration
-# Defines forbidden zones and alert rules per camera
-
 cameras:
-  - camera_id: cam_nave3_hornos
-    forbidden_rois:
-      - name: loading_zone
-        points:
-          - [100, 100]
-          - [500, 100]
-          - [500, 400]
-          - [100, 400]
-      # Add more ROIs as needed
-      # - name: danger_zone_2
-      #   points:
-      #     - [600, 200]
-      #     - [800, 200]
-      #     - [800, 500]
-      #     - [600, 500]
-
-    # Classes that are allowed in forbidden ROIs (no alerts)
-    allowed_classes: [pine, worker]
-
-    # Classes that trigger alerts when in forbidden ROIs
-    alert_classes: [object]
-
-  - camera_id: cam_nave4_difusor
-    forbidden_rois:
-      - name: danger_zone_1
-        points:
-          - [200, 150]
-          - [600, 150]
-          - [600, 500]
-          - [200, 500]
-    allowed_classes: [pine, worker]
-    alert_classes: [object]
-
-# Note: Points are in pixel coordinates [x, y]
-# ROI polygons should be defined clockwise or counter-clockwise
+- camera_id: cam_nave3_hornos_a_cam3
+  forbidden_rois:
+  - name: cam_nave3_hornos_a_cam3
+    points:
+    - - 498
+      - 878
+    - - 597
+      - 453
+    - - 955
+      - 397
+    - - 968
+      - 823
+  allowed_classes:
+  - pine
+  - worker
+  alert_classes:
+  - object
+  strict_mode: true
+- camera_id: cam_nave3_hornos_a
+  forbidden_rois:
+  - name: cam_nave3_hornos_a
+    points:
+    - - 392
+      - 1339
+    - - 593
+      - 877
+    - - 2346
+      - 1086
+    - - 2400
+      - 1509
+  allowed_classes:
+  - pine
+  - worker
+  alert_classes:
+  - object
+  strict_mode: true
+- camera_id: cam_nave3_hornos_b
+  forbidden_rois:
+  - name: cam_nave3_hornos_b
+    points:
+    - - 350
+      - 1420
+    - - 538
+      - 1053
+    - - 2161
+      - 1058
+    - - 2199
+      - 1431
+  allowed_classes:
+  - pine
+  - worker
+  alert_classes:
+  - object
+  strict_mode: true
+- camera_id: cam_nave3_hornos_b_cam3
+  forbidden_rois:
+  - name: cam_nave3_hornosb_cam3_1
+    points:
+    - - 1419
+      - 1135
+    - - 933
+      - 1204
+    - - 861
+      - 817
+    - - 1203
+      - 779
+  - name: cam_nave3_hornos_b_cam3_2
+    points:
+    - - 441
+      - 1429
+    - - 484
+      - 834
+    - - 855
+      - 807
+    - - 980
+      - 1422
+  allowed_classes:
+  - pine
+  - worker
+  alert_classes:
+  - object
+  strict_mode: true
+- camera_id: cam_nave4_difusor_a
+  forbidden_rois:
+  - name: cam_nave4_difusor_a
+    points:
+    - - 230
+      - 1499
+    - - 447
+      - 884
+    - - 2041
+      - 950
+    - - 2290
+      - 1484
+  allowed_classes:
+  - pine
+  - worker
+  alert_classes:
+  - object
+  strict_mode: true
+- camera_id: cam_nave4_difusor_a_cam3
+  forbidden_rois:
+  - name: cam_nave4_difusor_a_cam3
+    points:
+    - - 153
+      - 1329
+    - - 393
+      - 170
+    - - 2092
+      - 305
+    - - 1982
+      - 1424
+  allowed_classes:
+  - pine
+  - worker
+  alert_classes:
+  - object
+  strict_mode: true
+- camera_id: cam_nave4_difusor_b
+  forbidden_rois:
+  - name: cam_nave4_difusor_b
+    points:
+    - - 342
+      - 1419
+    - - 551
+      - 876
+    - - 2088
+      - 742
+    - - 2337
+      - 1430
+  allowed_classes:
+  - pine
+  - worker
+  alert_classes:
+  - object
+  strict_mode: true
+- camera_id: cam_nave4_difusor_b_cam3
+  forbidden_rois:
+  - name: cam_nave4_difusor_cam3
+    points:
+    - - 722
+      - 1381
+    - - 901
+      - 6
+    - - 2444
+      - 2
+    - - 2513
+      - 1424
+  allowed_classes:
+  - pine
+  - worker
+  alert_classes:
+  - object
+  strict_mode: true
