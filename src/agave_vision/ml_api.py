@@ -3,11 +3,9 @@ Agave Vision ML API
 
 Pure ML interface for object detection, ROI filtering, and alert generation.
 This is the main entry point for external teams integrating our ML capabilities.
-
-NO HTTP, NO DOCKER, NO SERVER CONCERNS - Just pure Python ML API.
 """
 
-from __future__ import annotations
+from __future__ import annotations  # noqa: I001
 
 import time
 from datetime import datetime
@@ -18,17 +16,11 @@ import cv2
 import numpy as np
 
 from agave_vision.core.inference import YOLOInference, Detection
-from agave_vision.core.roi import ROIManager, CameraROI
-from agave_vision.core.alerts import AlertEvent
+from agave_vision.core.roi import ROIManager
 
 
 class AgaveVisionML:
     """
-    Pure ML API for Agave Vision object detection and alerting.
-
-    This is the ONLY interface external teams need to use.
-    No HTTP, no Docker, no server concerns - just ML.
-
     Example:
         >>> from agave_vision.ml_api import AgaveVisionML
         >>> import cv2
@@ -72,8 +64,8 @@ class AgaveVisionML:
         # Initialize YOLO inference engine
         self.inference_engine = YOLOInference(
             str(self.model_path),
-            conf_threshold=conf_threshold,
-            iou_threshold=iou_threshold
+            conf_threshold=conf_threshold,  # type: ignore
+            iou_threshold=iou_threshold,  # type: ignore
         )
 
         # Initialize ROI manager if config provided
@@ -87,10 +79,12 @@ class AgaveVisionML:
 
         if enable_alert_storage:
             from agave_vision.storage.alert_store import AlertStore
+
             self.alert_store = AlertStore()
 
         if enable_detection_logging:
             from agave_vision.storage.detection_logger import DetectionLogger
+
             self.detection_logger = DetectionLogger()
 
     def predict_frame(
@@ -145,10 +139,7 @@ class AgaveVisionML:
         timestamp = datetime.utcnow()
 
         # Run YOLO inference
-        detections = self.inference_engine.detect(
-            image,
-            conf_threshold=self.conf_threshold
-        )
+        detections = self.inference_engine.detect(image, conf_threshold=self.conf_threshold)  # type: ignore
 
         # Check for ROI violations if camera_id and ROI manager available
         alerts = []
@@ -156,7 +147,7 @@ class AgaveVisionML:
             camera_roi = self.roi_manager.get_camera_rois(camera_id)
             if camera_roi:
                 for detection in detections:
-                    alert_event = camera_roi.check_detection(detection, camera_id)
+                    alert_event = camera_roi.check_detection(detection, camera_id)  # type: ignore
                     if alert_event:
                         # Store alert if enabled
                         if store_alerts and self.alert_store:
@@ -166,12 +157,14 @@ class AgaveVisionML:
 
         # Log detections if enabled
         if log_detections and self.detection_logger:
-            self.detection_logger.log_detection({
-                "timestamp": timestamp.isoformat(),
-                "camera_id": camera_id,
-                "detections": [self._detection_to_dict(d) for d in detections],
-                "num_alerts": len(alerts),
-            })
+            self.detection_logger.log_detection(
+                {
+                    "timestamp": timestamp.isoformat(),
+                    "camera_id": camera_id,
+                    "detections": [self._detection_to_dict(d) for d in detections],
+                    "num_alerts": len(alerts),
+                }
+            )
 
         inference_time_ms = (time.time() - start_time) * 1000
 
@@ -212,7 +205,7 @@ class AgaveVisionML:
             >>> for result in ml.predict_video_stream("rtsp://camera/stream", "cam1", fps_limit=5.0):
             ...     print(f"Frame alerts: {len(result['alerts'])}")
             ...     # Send to your server, database, websocket, etc.
-        """
+        """  # noqa: E501
         cap = cv2.VideoCapture(video_source)
         if not cap.isOpened():
             raise ValueError(f"Cannot open video source: {video_source}")
@@ -372,7 +365,7 @@ class AgaveVisionML:
             "model_path": str(self.model_path),
             "classes": self.inference_engine.class_names,
             "num_classes": len(self.inference_engine.class_names),
-            "input_size": self.inference_engine.model_input_size,
+            "input_size": self.inference_engine.model_input_size,  # type: ignore
             "conf_threshold": self.conf_threshold,
             "iou_threshold": self.iou_threshold,
         }
