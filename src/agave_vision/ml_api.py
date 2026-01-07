@@ -15,6 +15,7 @@ from typing import Generator, List, Optional, Dict, Any
 import cv2
 import numpy as np
 
+from agave_vision.config.model_config import get_default_model_path
 from agave_vision.core.inference import YOLOInference, Detection
 from agave_vision.core.roi import ROIManager
 
@@ -25,9 +26,12 @@ class AgaveVisionML:
         >>> from agave_vision.ml_api import AgaveVisionML
         >>> import cv2
         >>>
-        >>> # Initialize
+        >>> # Initialize with default model
+        >>> ml = AgaveVisionML(roi_config_path="configs/rois.yaml")
+        >>>
+        >>> # Or specify custom model
         >>> ml = AgaveVisionML(
-        ...     model_path="models/best.pt",
+        ...     model_path="models/custom-model.pt",
         ...     roi_config_path="configs/rois.yaml"
         ... )
         >>>
@@ -39,7 +43,7 @@ class AgaveVisionML:
 
     def __init__(
         self,
-        model_path: str,
+        model_path: Optional[str] = None,
         roi_config_path: Optional[str] = None,
         conf_threshold: float = 0.25,
         iou_threshold: float = 0.45,
@@ -50,13 +54,18 @@ class AgaveVisionML:
         Initialize ML engine with model and configuration.
 
         Args:
-            model_path: Path to YOLO model weights (.pt file)
+            model_path: Path to YOLO model weights (.pt file).
+                       If None, uses default from configs/model.yaml
             roi_config_path: Path to ROI configuration YAML (optional)
             conf_threshold: Confidence threshold for detections (0-1)
             iou_threshold: IOU threshold for NMS (0-1)
             enable_alert_storage: Enable persistent alert storage
             enable_detection_logging: Enable detection history logging
         """
+        # Use default model path if not provided
+        if model_path is None:
+            model_path = get_default_model_path()
+
         self.model_path = Path(model_path)
         self.conf_threshold = conf_threshold
         self.iou_threshold = iou_threshold
@@ -64,8 +73,8 @@ class AgaveVisionML:
         # Initialize YOLO inference engine
         self.inference_engine = YOLOInference(
             str(self.model_path),
-            conf_threshold=conf_threshold,  # type: ignore
-            iou_threshold=iou_threshold,  # type: ignore
+            conf=conf_threshold,  # type: ignore
+            iou=iou_threshold,  # type: ignore
         )
 
         # Initialize ROI manager if config provided

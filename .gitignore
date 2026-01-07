@@ -84,12 +84,20 @@ config.local.*
 local_settings.py
 settings.local.*
 
-# Project-specific config files with secrets (keep .example.yaml files)
-configs/cameras.yaml
-configs/rois.yaml
-configs/services.yaml
+# ===========================
+#  HANDOFF NOTE: configs/ are INCLUDED for team handoff
+# ===========================
+# Project-specific config files - ALLOWING for handoff
+# configs/cameras.yaml     # ✅ ALLOWED (needed for handoff)
+# configs/rois.yaml        # ✅ ALLOWED (needed for handoff)
+# configs/services.yaml    # ✅ ALLOWED (needed for handoff)
+
 # Keep .example.yaml files in git:
 !configs/*.example.yaml
+
+# Only ignore truly sensitive files:
+configs/*.secret.yaml
+configs/*.credentials.yaml
 
 # ---- Jupyter & ML Artifacts ----
 .ipynb_checkpoints/
@@ -97,9 +105,9 @@ jupyter-cache/
 .mlops/
 mlruns/
 model_store/
-models/
+# models/                  # ❌ COMMENTED OUT - models/ MUST be included for handoff
 checkpoints/
-runs/
+runs/                      # Training run outputs (keep ignored)
 wandb/
 lightning_logs/
 
@@ -109,10 +117,15 @@ dataset/
 datasets/
 *.tfrecord
 *.pth
-*.pt
+# *.pt                     # ❌ COMMENTED OUT - .pt files MUST be included for handoff
 *.h5
 *.ckpt
 *.onnx
+
+# ===========================
+#  HANDOFF: Allow model weights in models/ directory
+# ===========================
+!models/**/*.pt            # ✅ ALLOW .pt files in models/ for handoff
 
 # ---- Large media ----
 *.mp4

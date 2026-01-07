@@ -2,7 +2,7 @@
 # Shared configuration for all microservices
 
 inference:
-  model_path: "models/yolov8n_pina/exp/weights/best.pt"
+  model_path: "models/agave-industrial-vision-v1.0.0.pt"
   confidence: 0.25  # Minimum confidence threshold for detections
   iou_threshold: 0.45  # IoU threshold for NMS (non-maximum suppression)
   device: "cuda"  # Options: "cuda", "cpu", "mps" (Apple Silicon)
