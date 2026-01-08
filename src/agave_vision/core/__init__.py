@@ -2,7 +2,8 @@
 
 from agave_vision.core.inference import YOLOInference
 from agave_vision.core.roi import ROIPolygon, CameraROI, ROIManager
-from agave_vision.core.alerts import AlertEvent, AlertDebouncer
+from agave_vision.core.alerts import AlertEvent
+from agave_vision.core.tracking import CentroidTracker
 from agave_vision.core.frames import (
     sliding_window_tiles,
     compute_frame_sharpness,
@@ -18,7 +19,7 @@ __all__ = [
     "CameraROI",
     "ROIManager",
     "AlertEvent",
-    "AlertDebouncer",
+    "CentroidTracker",
     "sliding_window_tiles",
     "compute_frame_sharpness",
     "compute_frame_brightness",

@@ -1,14 +1,16 @@
 """
-Alert Data Structures and Debouncing
+Alert Data Structures
 
-Provides alert event modeling, serialization, and deduplication logic.
+Provides alert event modeling and serialization.
+
+Note: AlertDebouncer has been moved to services.alert_router.debounce
+to avoid code duplication and provide enhanced granular deduplication.
 """
 
 from __future__ import annotations
 
-from collections import defaultdict
 from dataclasses import asdict, dataclass
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from .inference import Detection
@@ -98,83 +100,4 @@ class AlertEvent:
             violation_type=data.get("violation_type", "forbidden_class"),  # NEW
             allowed_classes=data.get("allowed_classes"),  # NEW
             strict_mode=data.get("strict_mode", True),  # NEW
-        )
-
-
-class AlertDebouncer:
-    """
-    Debounce alerts to prevent spam from the same camera.
-
-    Tracks recent alerts per camera and limits emission rate based on
-    a sliding time window.
-
-    Args:
-        window_seconds: Time window for deduplication (seconds)
-        max_per_window: Maximum alerts allowed per camera per window
-
-    Example:
-        >>> debouncer = AlertDebouncer(window_seconds=5.0, max_per_window=1)
-        >>> if debouncer.should_emit(alert):
-        ...     send_alert_to_downstream(alert)
-    """
-
-    def __init__(self, window_seconds: float = 5.0, max_per_window: int = 1):
-        self.window = timedelta(seconds=window_seconds)
-        self.max_per_window = max_per_window
-        self.recent_alerts: Dict[str, List[datetime]] = defaultdict(list)
-
-    def should_emit(self, alert: AlertEvent) -> bool:
-        """
-        Check if alert should be emitted based on recent history.
-
-        Args:
-            alert: Alert event to check
-
-        Returns:
-            True if alert should be emitted, False if it should be suppressed
-        """
-        camera_id = alert.camera_id
-        now = alert.timestamp
-
-        # Clean old alerts outside the window
-        cutoff = now - self.window
-        self.recent_alerts[camera_id] = [
-            ts for ts in self.recent_alerts[camera_id] if ts > cutoff
-        ]
-
-        # Check if under limit
-        if len(self.recent_alerts[camera_id]) < self.max_per_window:
-            self.recent_alerts[camera_id].append(now)
-            return True
-
-        return False
-
-    def reset(self, camera_id: Optional[str] = None) -> None:
-        """
-        Reset debounce state.
-
-        Args:
-            camera_id: Reset for specific camera, or all cameras if None
-        """
-        if camera_id is None:
-            self.recent_alerts.clear()
-        else:
-            self.recent_alerts.pop(camera_id, None)
-
-    def get_recent_count(self, camera_id: str) -> int:
-        """
-        Get number of recent alerts for a camera within the window.
-
-        Args:
-            camera_id: Camera identifier
-
-        Returns:
-            Number of recent alerts
-        """
-        return len(self.recent_alerts.get(camera_id, []))
-
-    def __repr__(self) -> str:
-        return (
-            f"AlertDebouncer(window={self.window.total_seconds()}s, "
-            f"max_per_window={self.max_per_window})"
         )

@@ -24,6 +24,7 @@ class Detection:
     bbox: Tuple[float, float, float, float]  # x1, y1, x2, y2
     center: Tuple[float, float]  # cx, cy
     is_unknown: bool = False  # True if detection has low confidence or unclassified
+    tracking_id: Optional[str] = None  # For multi-frame object persistence
 
     @staticmethod
     def from_yolo_box(

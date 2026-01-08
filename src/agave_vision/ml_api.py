@@ -18,6 +18,8 @@ import numpy as np
 from agave_vision.config.model_config import get_default_model_path
 from agave_vision.core.inference import YOLOInference, Detection
 from agave_vision.core.roi import ROIManager
+from agave_vision.core.tracking import CentroidTracker
+from agave_vision.core.metrics import ModelMetricsTracker
 
 
 class AgaveVisionML:
@@ -49,6 +51,11 @@ class AgaveVisionML:
         iou_threshold: float = 0.45,
         enable_alert_storage: bool = False,
         enable_detection_logging: bool = False,
+        enable_tracking: bool = True,
+        tracking_max_distance: float = 50.0,
+        tracking_max_disappeared: int = 30,
+        enable_metrics: bool = True,
+        metrics_window_size: int = 1000,
     ):
         """
         Initialize ML engine with model and configuration.
@@ -61,6 +68,11 @@ class AgaveVisionML:
             iou_threshold: IOU threshold for NMS (0-1)
             enable_alert_storage: Enable persistent alert storage
             enable_detection_logging: Enable detection history logging
+            enable_tracking: Enable object tracking across frames (default: True)
+            tracking_max_distance: Max distance (pixels) to match objects (default: 50)
+            tracking_max_disappeared: Max frames before object deregistration (default: 30)
+            enable_metrics: Enable inference metrics tracking (default: True)
+            metrics_window_size: Number of recent inferences to track (default: 1000)
         """
         # Use default model path if not provided
         if model_path is None:
@@ -81,6 +93,19 @@ class AgaveVisionML:
         self.roi_manager: Optional[ROIManager] = None
         if roi_config_path:
             self.roi_manager = ROIManager(roi_config_path)
+
+        # Initialize object tracker
+        self.tracker: Optional[CentroidTracker] = None
+        if enable_tracking:
+            self.tracker = CentroidTracker(
+                max_distance=tracking_max_distance,
+                max_disappeared=tracking_max_disappeared,
+            )
+
+        # Initialize metrics tracker
+        self.metrics: Optional[ModelMetricsTracker] = None
+        if enable_metrics:
+            self.metrics = ModelMetricsTracker(window_size=metrics_window_size)
 
         # Initialize storage (deferred imports to avoid dependencies if not used)
         self.alert_store = None
@@ -148,7 +173,11 @@ class AgaveVisionML:
         timestamp = datetime.utcnow()
 
         # Run YOLO inference
-        detections = self.inference_engine.detect(image, conf_threshold=self.conf_threshold)  # type: ignore
+        detections = self.inference_engine.predict(image, conf=self.conf_threshold)  # type: ignore
+
+        # Apply object tracking if enabled
+        if self.tracker:
+            detections = self.tracker.update(detections)
 
         # Check for ROI violations if camera_id and ROI manager available
         alerts = []
@@ -156,13 +185,21 @@ class AgaveVisionML:
             camera_roi = self.roi_manager.get_camera_rois(camera_id)
             if camera_roi:
                 for detection in detections:
-                    alert_event = camera_roi.check_detection(detection, camera_id)  # type: ignore
-                    if alert_event:
+                    if camera_roi.should_alert(detection):
+                        # Create alert dictionary
+                        alert_dict = {
+                            "timestamp": timestamp.isoformat(),
+                            "camera_id": camera_id,
+                            "detection": self._detection_to_dict(detection),
+                            "alert_type": "roi_violation",
+                            "reason": f"Detected '{detection.class_name}' in forbidden zone (not in allowed_classes)"
+                        }
+
                         # Store alert if enabled
                         if store_alerts and self.alert_store:
-                            self.alert_store.save_alert(alert_event.to_dict())
+                            self.alert_store.save_alert(alert_dict)
 
-                        alerts.append(alert_event.to_dict())
+                        alerts.append(alert_dict)
 
         # Log detections if enabled
         if log_detections and self.detection_logger:
@@ -176,6 +213,15 @@ class AgaveVisionML:
             )
 
         inference_time_ms = (time.time() - start_time) * 1000
+
+        # Record metrics if enabled
+        if self.metrics:
+            self.metrics.record_inference(
+                inference_time_ms=inference_time_ms,
+                num_detections=len(detections),
+                num_alerts=len(alerts),
+                camera_id=camera_id,
+            )
 
         return {
             "detections": [self._detection_to_dict(d) for d in detections],
@@ -427,7 +473,7 @@ class AgaveVisionML:
 
     def _detection_to_dict(self, detection: Detection) -> Dict[str, Any]:
         """Convert Detection object to dictionary."""
-        return {
+        result = {
             "bbox": list(detection.bbox),
             "confidence": float(detection.confidence),
             "class_name": detection.class_name,
@@ -435,11 +481,33 @@ class AgaveVisionML:
             "center": list(detection.center),
             "is_unknown": detection.is_unknown,
         }
+        # Include tracking_id if available
+        if detection.tracking_id is not None:
+            result["tracking_id"] = detection.tracking_id
+        return result
+
+    def get_metrics(self) -> Optional[Dict]:
+        """
+        Get inference metrics statistics.
+
+        Returns:
+            Dictionary with metrics statistics or None if metrics disabled
+        """
+        if self.metrics:
+            return self.metrics.get_statistics()
+        return None
+
+    def reset_metrics(self) -> None:
+        """Reset metrics tracker."""
+        if self.metrics:
+            self.metrics.reset()
 
     def __repr__(self) -> str:
         return (
             f"AgaveVisionML("
             f"model={self.model_path.name}, "
             f"conf={self.conf_threshold}, "
-            f"roi_enabled={self.roi_manager is not None})"
+            f"roi_enabled={self.roi_manager is not None}, "
+            f"tracking_enabled={self.tracker is not None}, "
+            f"metrics_enabled={self.metrics is not None})"
         )

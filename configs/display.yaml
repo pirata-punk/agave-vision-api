@@ -1,0 +1,24 @@
+# Display Configuration for Demo
+# Color coding for detections and ROI visualization
+
+# Class colors (BGR format for OpenCV)
+class_colors:
+  object: [0, 165, 255]      # Orange - known restricted class
+  pine: [0, 255, 0]          # Green - allowed class
+  worker: [255, 255, 0]      # Cyan - allowed class
+  unknown: [128, 0, 128]     # Purple - low confidence/unknown
+
+# ROI visualization colors
+roi_colors:
+  forbidden_zone: [0, 100, 200]   # Dark red/maroon - forbidden ROI overlay
+  forbidden_border: [0, 0, 255]   # Bright red - ROI borders (reserved for alerts)
+
+# Alert colors (override class colors when alert is triggered)
+alert_color: [0, 0, 255]     # Red - ONLY for alert-triggering detections
+
+# UI colors
+ui_colors:
+  panel_bg: [0, 0, 0]        # Black - panel background
+  text_primary: [255, 255, 255]    # White - primary text
+  text_secondary: [200, 200, 200]  # Light gray - secondary text
+  alert_text: [0, 0, 255]    # Red - alert count text

@@ -1,0 +1,31 @@
+# Alerting Configuration
+# Controls alert deduplication and delivery protocols
+
+# Alert deduplication settings
+debounce_window_seconds: 5.0  # Time window for deduplication
+max_alerts_per_window: 1      # Max alerts per unique (camera, class, ROI) per window
+
+# Alert delivery protocol
+# Options: "stdout", "webhook", "hikvision"
+protocol: "stdout"
+
+# Webhook configuration (if protocol is "webhook")
+webhook_url: null              # Set to your webhook URL or use env: ALERTING_WEBHOOK_URL
+webhook_timeout_seconds: 5.0   # HTTP timeout for webhook calls
+webhook_retry_attempts: 3      # Number of retries on failure
+
+# Hikvision NVR integration (if protocol is "hikvision")
+hikvision_host: null           # Set to NVR IP or use env: ALERTING_HIKVISION_HOST
+hikvision_port: 8000           # NVR API port
+hikvision_username: null       # Set or use env: ALERTING_HIKVISION_USERNAME
+hikvision_password: null       # Set or use env: ALERTING_HIKVISION_PASSWORD
+
+# Environment variable overrides:
+# - ALERTING_PROTOCOL
+# - ALERTING_WEBHOOK_URL
+# - ALERTING_DEBOUNCE_WINDOW_SECONDS
+# - ALERTING_MAX_ALERTS_PER_WINDOW
+# - ALERTING_HIKVISION_HOST
+# - ALERTING_HIKVISION_PORT
+# - ALERTING_HIKVISION_USERNAME
+# - ALERTING_HIKVISION_PASSWORD

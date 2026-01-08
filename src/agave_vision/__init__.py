@@ -13,7 +13,11 @@ from agave_vision.ml_api import AgaveVisionML
 # Core ML components (for advanced usage)
 from agave_vision.core.inference import YOLOInference
 from agave_vision.core.roi import ROIPolygon, CameraROI, ROIManager
-from agave_vision.core.alerts import AlertEvent, AlertDebouncer
+from agave_vision.core.alerts import AlertEvent
+from agave_vision.core.tracking import CentroidTracker
+
+# Alert debouncing (moved to services module)
+from agave_vision.services.alert_router.debounce import AlertDebouncer
 
 # Storage (for advanced usage)
 from agave_vision.storage.alert_store import AlertStore
@@ -30,6 +34,8 @@ __all__ = [
     "CameraROI",
     "ROIManager",
     "AlertEvent",
+    "CentroidTracker",
+    # Alert handling
     "AlertDebouncer",
     # Storage
     "AlertStore",
